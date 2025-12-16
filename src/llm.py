@@ -3,19 +3,20 @@ import time
 from tqdm import tqdm
 import openai
 
-# Modify your own openai config
-openai.api_base = os.environ["OPENAI_API_BASE"]
-openai.api_version = os.environ["OPENAI_API_VERSION"]
-openai.api_key = os.environ["OPENAI_API_KEY"]
+# Use standard OpenAI API with system environment variable
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+# Model to use (can be changed to gpt-4, gpt-4-turbo, etc.)
+MODEL = os.environ.get("TASQL_MODEL", "gpt-4o-mini")
 
 
 def connect_gpt4(message, prompt):
     response = openai.ChatCompletion.create(
-                    engine="gpt-4-32k", 
-                    messages = [{"role":"system","content":f"{message}"}, #"You are a helpful assisant. Help the user to complete SQL and no explaination is needed."
+                    model=MODEL,
+                    messages = [{"role":"system","content":f"{message}"},
                                 {"role":"user", "content":f"{prompt}"}],
                     temperature=0,
-                    max_tokens=800, #800
+                    max_tokens=800,
                     top_p=1,
                     frequency_penalty=0,
                     presence_penalty=0,
@@ -28,11 +29,11 @@ def collect_response(prompt, max_tokens = 800, stop = None):
             flag = 0
             try:
                 response = openai.ChatCompletion.create(
-                    engine="gpt-4-32k", 
-                    messages = [{"role":"system","content":"You are an AI assistant that helps people find information."}, #"You are a helpful assisant. Help the user to complete SQL and no explaination is needed."
+                    model=MODEL,
+                    messages = [{"role":"system","content":"You are an AI assistant that helps people find information."},
                                 {"role":"user", "content":f"{prompt}"}],
                     temperature=0,
-                    max_tokens=max_tokens, #800
+                    max_tokens=max_tokens,
                     top_p=1,
                     frequency_penalty=0,
                     presence_penalty=0,
