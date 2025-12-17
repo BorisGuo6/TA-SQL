@@ -5,6 +5,20 @@ import argparse
 from src.modules import TASL, TALOG
 
 
+import re
+
+def clean_sql(sql):
+    """Clean markdown code blocks and extra whitespace from SQL"""
+    # Remove ```sql ... ``` blocks
+    sql = re.sub(r'```sql\s*', '', sql)
+    sql = re.sub(r'```\s*', '', sql)
+    # Remove SELECT prefix if duplicated
+    sql = re.sub(r'^SELECT\s+SELECT', 'SELECT', sql, flags=re.IGNORECASE)
+    # Clean whitespace
+    sql = sql.replace('\"','').replace('\\\n',' ').replace('\n',' ')
+    sql = ' '.join(sql.split())
+    return sql.strip()
+
 def generate_sql(tasl, talog, output_path):
     question_json = tasl.question_json
     output_dic = {}
@@ -12,7 +26,7 @@ def generate_sql(tasl, talog, output_path):
         sl_schemas = tasl.get_schema(i)
         _, sql = talog.sr2sql(i, sl_schemas)
         db_id = question_json[i]['db_id']
-        sql = sql.replace('\"','').replace('\\\n',' ').replace('\n',' ')
+        sql = clean_sql(sql)
         sql = sql + '\t----- bird -----\t' + db_id
         print(sql)
         
